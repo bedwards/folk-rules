@@ -30,6 +30,7 @@ module FolkRules
       checks << check_drum_notes_valid(events)
       checks << check_pitched_notes_in_range(events)
       checks << check_velocities_in_range(events)
+      checks << check_cc_values_in_range(events)
 
       Result.new(
         song_name: @song.name,
@@ -46,21 +47,35 @@ module FolkRules
       Check.new(name: "has_events", ok: events.any?, detail: "#{events.size} events")
     end
 
+    def note_events(events)
+      events.select { |e| e.is_a?(Scheduler::MidiEvent) }
+    end
+
+    def cc_events(events)
+      events.select { |e| e.is_a?(Scheduler::CcEvent) }
+    end
+
     def check_drum_notes_valid(events)
-      drum_events = events.select { |e| e.channel == 9 }
-      bad = drum_events.reject { |e| (0..127).cover?(e.note) }
+      drum = note_events(events).select { |e| e.channel == 9 }
+      bad = drum.reject { |e| (0..127).cover?(e.note) }
       Check.new(name: "drum_notes_valid", ok: bad.empty?, detail: "#{bad.size} out-of-range notes")
     end
 
     def check_pitched_notes_in_range(events)
-      pitched = events.reject { |e| e.channel == 9 }
+      pitched = note_events(events).reject { |e| e.channel == 9 }
       bad = pitched.reject { |e| (0..127).cover?(e.note) }
       Check.new(name: "pitched_notes_in_range", ok: bad.empty?, detail: "#{pitched.size} pitched events, #{bad.size} out-of-range")
     end
 
     def check_velocities_in_range(events)
-      bad = events.reject { |e| (1..127).cover?(e.velocity) }
+      bad = note_events(events).reject { |e| (1..127).cover?(e.velocity) }
       Check.new(name: "velocities_in_range", ok: bad.empty?, detail: "#{bad.size} out-of-range")
+    end
+
+    def check_cc_values_in_range(events)
+      ccs = cc_events(events)
+      bad = ccs.reject { |e| (0..127).cover?(e.value) }
+      Check.new(name: "cc_values_in_range", ok: bad.empty?, detail: "#{ccs.size} CC events, #{bad.size} out-of-range")
     end
   end
 end
