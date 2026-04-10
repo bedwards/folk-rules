@@ -34,6 +34,21 @@ module FolkRules
       conga_hi: 62, conga_low: 64, bongo_hi: 60, bongo_low: 61
     }.freeze
 
+    # Extract the root note name from a chord symbol.
+    # :am → "a", :fsharp7 → "fs", :bb → "bb", :bbm → "bb", :c → "c"
+    # Returns a string suitable for to_midi("#{root}0").
+    def self.chord_root(chord_sym)
+      s = chord_sym.to_s.downcase
+      # Match root: one letter + optional sharp/flat suffix, before any quality
+      if (m = s.match(/\A([a-g])([sb]?)/))
+        root = m[1] + m[2]
+        FLAT_MAP[root] || root
+
+      else
+        s[0] # fallback
+      end
+    end
+
     # Parse a note name like :c4, "Bb3", :fs2 → MIDI number.
     # Convention: C4 = 60 (middle C). Bitwig C1 = 36 = our C2 in SP terms
     # (but we use standard MIDI: C-1=0, C4=60).

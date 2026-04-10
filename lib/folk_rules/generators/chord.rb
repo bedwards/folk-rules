@@ -35,7 +35,7 @@ module FolkRules
         step_idx = ((beat - 1) * (steps.length / context.beats_per_bar)) % steps.length
         return [] unless %w[x X].include?(steps[step_idx])
 
-        root_pc = FolkRules::Note.to_midi("#{chord}0") % 12
+        root_pc = FolkRules::Note.to_midi("#{FolkRules::Note.chord_root(chord)}0") % 12
         root_midi = (@octave + 1) * 12 + root_pc
         intervals = INTERVALS.fetch(@voicing, INTERVALS[:major])
 

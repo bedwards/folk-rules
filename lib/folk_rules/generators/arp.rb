@@ -35,7 +35,7 @@ module FolkRules
         chord = context.current_chord
         return [] unless chord
 
-        root_pc = FolkRules::Note.to_midi("#{chord}0") % 12
+        root_pc = FolkRules::Note.to_midi("#{FolkRules::Note.chord_root(chord)}0") % 12
         intervals = CHORD_INTERVALS.fetch(@voicing, CHORD_INTERVALS[:major])
 
         # Build note pool across octave range.

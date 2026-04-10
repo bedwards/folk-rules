@@ -18,7 +18,7 @@ module FolkRules
         chord = context.current_chord
         return [] unless chord
 
-        root_pc = FolkRules::Note.to_midi("#{chord}0") % 12
+        root_pc = FolkRules::Note.to_midi("#{FolkRules::Note.chord_root(chord)}0") % 12
         root_note = (@octave + 1) * 12 + root_pc
 
         steps = @pattern.chars

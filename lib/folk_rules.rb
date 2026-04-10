@@ -23,6 +23,13 @@ module FolkRules
     autoload :Output, "folk_rules/midi/output"
   end
 
+  module Modules
+    autoload :Base, "folk_rules/modules/base"
+    autoload :Arpeggiator, "folk_rules/modules/arpeggiator"
+    autoload :ChordExpand, "folk_rules/modules/chord_expand"
+    autoload :NoteRepeat, "folk_rules/modules/note_repeat"
+  end
+
   module Generators
     autoload :Bass, "folk_rules/generators/bass"
     autoload :Chord, "folk_rules/generators/chord"

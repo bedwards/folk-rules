@@ -60,25 +60,25 @@ module FolkRules
 
     # DSL: define a bass part.
     def bass(part_name, bus: :pitched, channel: 0, octave_shift: 0,
-      octave: 2, velocity: 90, pattern: "x...x...x...x...", **overrides)
+      octave: 2, velocity: 90, pattern: "x...x...x...x...", modules: [], **overrides)
       require_relative "generators/bass"
       gen = Generators::Bass.new(octave: octave, velocity: velocity, pattern: pattern)
-      add_pitched_part(part_name, :bass, bus, channel, octave_shift, gen, overrides)
+      add_pitched_part(part_name, :bass, bus, channel, octave_shift, gen, overrides, modules: modules)
     end
 
     # DSL: define a chord part.
     def chord(part_name, bus: :pitched, channel: 0, octave_shift: 0,
       octave: 3, velocity: 85, voicing: :major,
-      pattern: "x...............", **overrides)
+      pattern: "x...............", modules: [], **overrides)
       require_relative "generators/chord"
       gen = Generators::Chord.new(octave: octave, velocity: velocity, voicing: voicing, pattern: pattern)
-      add_pitched_part(part_name, :chord, bus, channel, octave_shift, gen, overrides)
+      add_pitched_part(part_name, :chord, bus, channel, octave_shift, gen, overrides, modules: modules)
     end
 
     # DSL: define a melody part.
     def melody(part_name, bus: :pitched, channel: 0, octave_shift: 0,
       octave: 4, velocity: 95, pattern: "x...x...x...x...",
-      step_size: 1, direction: :up, scale: nil, **overrides)
+      step_size: 1, direction: :up, scale: nil, modules: [], **overrides)
       require_relative "generators/melody"
       if scale
         overrides[:key] = scale[0]
@@ -86,22 +86,22 @@ module FolkRules
       end
       gen = Generators::Melody.new(octave: octave, velocity: velocity, pattern: pattern,
         step_size: step_size, direction: direction)
-      add_pitched_part(part_name, :melody, bus, channel, octave_shift, gen, overrides)
+      add_pitched_part(part_name, :melody, bus, channel, octave_shift, gen, overrides, modules: modules)
     end
 
     # DSL: define an arp part.
     def arp(part_name, bus: :pitched, channel: 0, octave_shift: 0,
       octave: 3, velocity: 85, mode: :up, voicing: :major,
-      octave_range: 1, pattern: "x.x.x.x.x.x.x.x.", **overrides)
+      octave_range: 1, pattern: "x.x.x.x.x.x.x.x.", modules: [], **overrides)
       require_relative "generators/arp"
       gen = Generators::Arp.new(octave: octave, velocity: velocity, mode: mode,
         voicing: voicing, octave_range: octave_range, pattern: pattern)
-      add_pitched_part(part_name, :arp, bus, channel, octave_shift, gen, overrides)
+      add_pitched_part(part_name, :arp, bus, channel, octave_shift, gen, overrides, modules: modules)
     end
 
     private
 
-    def add_pitched_part(name, type, bus, channel, octave_shift, generator, context_overrides)
+    def add_pitched_part(name, type, bus, channel, octave_shift, generator, context_overrides, modules: [])
       bus_cfg = @buses[bus] || {}
       @pitched_parts << Part.new(
         name: name,
@@ -110,7 +110,8 @@ module FolkRules
         channel: channel,
         octave_shift: octave_shift + (bus_cfg[:octave_shift] || 0),
         context_overrides: context_overrides,
-        generator: generator
+        generator: generator,
+        modules: modules
       )
     end
   end
