@@ -56,6 +56,7 @@ module FolkRules
       @running = true
       print @cursor.hide
       print @cursor.clear_screen
+      enable_raw_mode
       setup_quit_handler
 
       while @running
@@ -67,6 +68,7 @@ module FolkRules
     ensure
       print @cursor.show
       print @cursor.clear_screen
+      disable_raw_mode
     end
 
     def stop
@@ -142,6 +144,15 @@ module FolkRules
         "[#{ts}] NOTE ch=#{event.channel} n=#{event.note} v=#{event.velocity} bus=#{event.bus}"
       end
       @event_log.shift while @event_log.size > @max_log
+    end
+
+    def enable_raw_mode
+      @old_tty_state = `stty -g`.chomp
+      system("stty raw -echo")
+    end
+
+    def disable_raw_mode
+      system("stty #{@old_tty_state}") if @old_tty_state
     end
 
     def setup_quit_handler
