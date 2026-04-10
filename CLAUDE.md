@@ -40,6 +40,7 @@ bundle exec rake spec                # rspec only (integration; iac-tagged skipp
 FOLK_RULES_IAC=1 bundle exec rake spec  # run IAC-gated integration (requires folk_clock bus free)
 bundle exec exe/fr doctor -v         # environment check
 bundle exec exe/fr clock monitor     # live BPM/bar/beat from Bitwig
+bundle exec exe/fr verify songs/examples/01_kick.rb  # simulated verify
 bundle exec exe/fr version
 ```
 
@@ -58,6 +59,26 @@ The rspec `:iac` loopback test pumps `0xF8` bytes from a `Midi::Output` into
 the real `folk_clock` IAC bus while a `Midi::Input` on the same bus feeds a
 live `Clock`. Asserts BPM within 0.5 of the target. Gated on `FOLK_RULES_IAC=1`
 because CI runners have no IAC driver.
+
+## Song DSL + Drum Sequencer (M2)
+
+`FolkRules.song` is the top-level DSL. A song declares context (key/scale/
+progression/rhythm), buses, and parts. Drum parts use pattern strings
+(`"x...x..."`) where each character is one subdivision step:
+- `x` = hit (velocity 100), `X` = accent (127), `o` = ghost (50), `.`/`-` = rest
+
+The `Scheduler` subscribes to `Clock` tick callbacks, divides ticks into
+subdivision steps, and emits MIDI note-on events to the configured outputs.
+In simulated mode (used by `fr verify`), it pumps a fake clock and captures
+all events into a `MemoryOutput` for assertion.
+
+`MusicalContext` (D9) holds the song's key, scale, progression, and rhythm.
+Each module reads from context but may override locally — a chord part in
+Bb major and a melody in G minor pentatonic coexist via `dup_with`.
+
+Example songs under `songs/examples/` are the real regression suite (D10).
+`fr verify` runs each song through the simulator and checks for valid MIDI.
+Failing examples block merge.
 
 ## Gotchas
 
