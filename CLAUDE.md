@@ -1,0 +1,47 @@
+# CLAUDE.md — folk-rules
+
+Notes for LLM collaborators. Humans should read `README.md` first.
+
+## Invariants (do not violate)
+
+1. **macOS only.** No Linux/Windows code paths, no cross-platform CI.
+2. **Stack purity.** Allowed: Bitwig 6, Sonic Pi, git, GitHub, Ruby + top-tier Ruby gems, our custom code, VS Code, Claude Code, macOS IAC Driver. **No Python, no Node, no shell glue where Ruby suffices.** If you reach for `sonic-pi-tool` (Python), stop — talk OSC directly with `osc-ruby`.
+3. **Pure-Ruby in-process realtime engine.** folk-rules does its own MIDI I/O and scheduling via `ffi-coremidi` in one process. There is **no separate daemon**, no OSC bridge used for timing, and Sonic Pi is an *optional* output adapter — not a dependency for clock or scheduling.
+4. **Two inspiration products are never named in this repo.** (See memory.) Features may match, product names must not appear in code, commits, PRs, issues, README, or CLAUDE.md.
+5. **No race-ahead on one component.** Drum sequencer, chords, arp, melody, bass, humanize, fills, CC — keep depth balanced across milestones.
+6. **No uncommitted files. No open PRs at tick end. No unreviewed Gemini feedback.**
+7. **Bump minor + tag on every merge.** `vX.Y.Z`, push tags.
+
+## Locked architecture (D1–D7, see memory for full rationale)
+
+- **D1** Pure-Ruby in-process engine. `FolkRules::Clock` reads MIDI clock (0xF8/FA/FB/FC/F2) from IAC `folk_clock` in a high-priority thread, smooths BPM over a rolling window, exposes `on_tick`/`on_beat`/`on_bar`/`on_start`/`on_stop` callbacks. Scheduler emits notes/CC directly to IAC `folk_drums` and `folk_pitched` via `ffi-coremidi`.
+- **D2** Three IAC buses: `folk_clock` (in only, from Bitwig), `folk_drums` (notes + CC out), `folk_pitched` (notes + CC out).
+- **D3** Repo layout: `lib/folk_rules/` core, `exe/fr` CLI, `songs/<name>/` for songs (single-file `songs/hello.rb` also valid), `test/` minitest for pure logic, `spec/` rspec for MIDI loopback integration.
+- **D4** Ruby DSL for songs — must feel native and cozy to a Ruby dev.
+- **D5** CLI: `fr <doctor|run|verify|midi|clock|new> ... -- <wrapped>`. Thor. `--help` at every level.
+- **D6** Verification is no-human: minitest on pure logic; rspec loopback records output MIDI with `ffi-coremidi` and asserts on timing/notes/CC; `fr verify` runs the same harness on a song.
+- **D7** Workflow: worktree per branch, PR, wait Gemini, triage by severity, file issues for medium+, merge, bump minor, tag, delete worktree.
+
+## Memory pointers
+
+Durable research and decisions live at `~/.claude/projects/-Users-bedwards-vibe-folk-rules/memory/`:
+
+- `project_folk_rules.md` — what, why, build order, stack, discipline.
+- `project_folk_rules_research.md` — verified facts about Sonic Pi clock behavior, Bitwig drum mapping, Ruby MIDI gems, stack purity rule.
+
+Re-read these at the start of any session before editing code. Do not re-derive the architecture.
+
+## Quick commands
+
+```sh
+bundle exec rake              # test + standardrb
+bundle exec exe/fr doctor -v  # environment check
+bundle exec exe/fr version
+```
+
+## Gotchas
+
+- `unimidi` and `ffi-coremidi` last released 2022; pin versions. If a future fix is needed, prefer forking over swapping the adapter API.
+- Sonic Pi OSC ports: 4557 (cmd), 4560 (cue in). Only one consumer of server logs at a time — the GUI OR our code, not both.
+- Bitwig Drum Machine pads start at C1 = MIDI 36. Sonic Pi `:c1` = MIDI 24. Default octave shift on the drums bus is +12 semitones.
+- Sonic Pi cannot natively sync to external MIDI clock. That is why we own the clock reader in Ruby.
