@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
     Dir["{lib,exe}/**/*", "README.md", "CLAUDE.md", "LICENSE.txt"].reject { |f| File.directory?(f) }
   end
   spec.bindir = "exe"
-  spec.executables = ["fr"]
+  spec.executables = ["fr-ruby"]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "thor", "~> 1.3"

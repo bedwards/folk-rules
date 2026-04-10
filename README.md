@@ -8,7 +8,7 @@ A production-grade, pure-Ruby realtime MIDI framework for composing music on mac
 - **Ruby all the way down.** No Python bridges, no shell glue. The DSL feels native to a Ruby developer.
 - **Tight with Bitwig.** Clock and transport come from Bitwig via IAC. Notes and CC go back.
 - **Modular and balanced.** Drums, chords, arps, melodies, bass, humanize, fills, bends, CC — each at the same depth.
-- **Verifiable without ears.** `fr verify` runs songs in simulation and asserts timing, notes, and CC.
+- **Verifiable without ears.** `fr-ruby verify` runs songs in simulation and asserts timing, notes, and CC.
 
 ## Stack
 
@@ -21,14 +21,14 @@ git clone git@github.com:bedwards/folk-rules.git
 cd folk-rules
 bundle install
 bundle exec rake          # tests + standardrb
-bundle exec exe/fr doctor # verify environment
+bundle exec exe/fr-ruby doctor # verify environment
 ```
 
 Global CLI shim:
 
 ```sh
 mkdir -p ~/.local/bin
-cat > ~/.local/bin/fr <<'SH'
+cat > ~/.local/bin/fr-ruby <<'SH'
 #!/usr/bin/env bash
 exec bundle exec --gemfile="$HOME/vibe/folk-rules/Gemfile" fr "$@"
 SH
@@ -41,16 +41,16 @@ chmod +x ~/.local/bin/fr
 2. **Bitwig 6** sending MIDI clock on `folk_clock`, receiving on `folk_drums` / `folk_pitched`.
 3. **Ruby 3.2+** (Homebrew: `brew install ruby`).
 
-`fr doctor` checks everything and tells you what's missing.
+`fr-ruby doctor` checks everything and tells you what's missing.
 
 ## CLI
 
 ```
-fr doctor          # verify environment
-fr version         # print version
-fr verify <song>   # simulate + assert MIDI output
-fr clock monitor   # live BPM/bar/beat from Bitwig
-fr tui             # read-only terminal monitor
+fr-ruby doctor          # verify environment
+fr-ruby version         # print version
+fr-ruby verify <song>   # simulate + assert MIDI output
+fr-ruby clock monitor   # live BPM/bar/beat from Bitwig
+fr-ruby tui             # read-only terminal monitor
 ```
 
 ## Writing Songs
@@ -121,7 +121,7 @@ See `CLAUDE.md` for locked decisions D1–D12. Key points:
 - **Clock reader.** `FolkRules::Clock` reads MIDI clock at 24 PPQN, smooths BPM over a rolling window.
 - **Shared musical context.** Song-level key/scale/progression; per-module overrides via `dup_with`.
 - **MIDI input.** `Input::ChordStream` reads live chords from Bitwig for real-time progression following.
-- **TUI monitor.** `fr tui` shows live transport, BPM, chord, and MIDI event log.
+- **TUI monitor.** `fr-ruby tui` shows live transport, BPM, chord, and MIDI event log.
 
 ## License
 

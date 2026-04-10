@@ -21,7 +21,7 @@ jobs:
         run: |
           for f in songs/examples/0[1-6]*.rb; do
             echo "=== Verifying $f ==="
-            bundle exec exe/fr verify "$f"
+            bundle exec exe/fr-ruby verify "$f"
           done
           echo "=== Verifying songs/examples/07_folk_country_jam/song.rb ==="
-          bundle exec exe/fr verify songs/examples/07_folk_country_jam/song.rb
+          bundle exec exe/fr-ruby verify songs/examples/07_folk_country_jam/song.rb

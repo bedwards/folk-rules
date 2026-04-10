@@ -18,8 +18,8 @@ Notes for LLM collaborators. Humans should read `README.md` first.
 - **D2** Three IAC buses: `folk_clock` (in only, from Bitwig), `folk_drums` (notes + CC out), `folk_pitched` (notes + CC out).
 - **D3** Repo layout: `lib/folk_rules/` core, `exe/fr` CLI, `songs/<name>/` for songs (single-file `songs/hello.rb` also valid), `test/` minitest for pure logic, `spec/` rspec for MIDI loopback integration.
 - **D4** Ruby DSL for songs — must feel native and cozy to a Ruby dev.
-- **D5** CLI: `fr <doctor|run|verify|midi|clock|new> ... -- <wrapped>`. Thor. `--help` at every level.
-- **D6** Verification is no-human: minitest on pure logic; rspec loopback records output MIDI with `ffi-coremidi` and asserts on timing/notes/CC; `fr verify` runs the same harness on a song.
+- **D5** CLI: `fr-ruby <doctor|run|verify|midi|clock|new> ... -- <wrapped>`. Thor. `--help` at every level.
+- **D6** Verification is no-human: minitest on pure logic; rspec loopback records output MIDI with `ffi-coremidi` and asserts on timing/notes/CC; `fr-ruby verify` runs the same harness on a song.
 - **D7** Workflow: worktree per branch, PR, wait Gemini, triage by severity, file issues for medium+, merge, bump minor, tag, delete worktree.
 
 ## Memory pointers
@@ -38,10 +38,10 @@ bundle exec rake                     # test + spec + standardrb
 bundle exec rake test                # minitest only (pure logic)
 bundle exec rake spec                # rspec only (integration; iac-tagged skipped by default)
 FOLK_RULES_IAC=1 bundle exec rake spec  # run IAC-gated integration (requires folk_clock bus free)
-bundle exec exe/fr doctor -v         # environment check
-bundle exec exe/fr clock monitor     # live BPM/bar/beat from Bitwig
-bundle exec exe/fr verify songs/examples/01_kick.rb  # simulated verify
-bundle exec exe/fr version
+bundle exec exe/fr-ruby doctor -v         # environment check
+bundle exec exe/fr-ruby clock monitor     # live BPM/bar/beat from Bitwig
+bundle exec exe/fr-ruby verify songs/examples/01_kick.rb  # simulated verify
+bundle exec exe/fr-ruby version
 ```
 
 ## Clock architecture (M1)
@@ -69,7 +69,7 @@ progression/rhythm), buses, and parts. Drum parts use pattern strings
 
 The `Scheduler` subscribes to `Clock` tick callbacks, divides ticks into
 subdivision steps, and emits MIDI note-on events to the configured outputs.
-In simulated mode (used by `fr verify`), it pumps a fake clock and captures
+In simulated mode (used by `fr-ruby verify`), it pumps a fake clock and captures
 all events into a `MemoryOutput` for assertion.
 
 `MusicalContext` (D9) holds the song's key, scale, progression, and rhythm.
@@ -77,7 +77,7 @@ Each module reads from context but may override locally — a chord part in
 Bb major and a melody in G minor pentatonic coexist via `dup_with`.
 
 Example songs under `songs/examples/` are the real regression suite (D10).
-`fr verify` runs each song through the simulator and checks for valid MIDI.
+`fr-ruby verify` runs each song through the simulator and checks for valid MIDI.
 Failing examples block merge.
 
 ## Composable Modules (M3a+M3b, D12)
@@ -103,7 +103,7 @@ progression source for MusicalContext.
 
 ## TUI Monitor (M-tui, D11)
 
-`fr tui` shows live transport, BPM, bar/beat, key/chord, and a scrolling
+`fr-ruby tui` shows live transport, BPM, bar/beat, key/chord, and a scrolling
 MIDI event log. Built on tty-cursor/screen/box. Read-only, 10fps, q to quit.
 
 ## Example Songs (D10)

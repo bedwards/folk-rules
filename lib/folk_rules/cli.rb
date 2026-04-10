@@ -39,7 +39,7 @@ module FolkRules
       puts FolkRules::VERSION
     end
 
-    desc "doctor", "Verify the dev environment (ruby, Sonic Pi, IAC buses, MIDI gems)"
+    desc "doctor", "Verify the dev environment (ruby, IAC buses, MIDI gems)"
     method_option :verbose, type: :boolean, default: false, aliases: "-v"
     def doctor
       ok = Doctor.new(verbose: options[:verbose]).run
