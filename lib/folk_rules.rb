@@ -12,6 +12,7 @@ module FolkRules
   autoload :Note, "folk_rules/note"
   autoload :MusicalContext, "folk_rules/musical_context"
   autoload :DrumPattern, "folk_rules/drum_pattern"
+  autoload :Part, "folk_rules/part"
   autoload :Song, "folk_rules/song"
   autoload :Scheduler, "folk_rules/scheduler"
   autoload :MemoryOutput, "folk_rules/memory_output"
@@ -22,7 +23,13 @@ module FolkRules
     autoload :Output, "folk_rules/midi/output"
   end
 
-  # Top-level DSL method for defining songs.
+  module Generators
+    autoload :Bass, "folk_rules/generators/bass"
+    autoload :Chord, "folk_rules/generators/chord"
+    autoload :Melody, "folk_rules/generators/melody"
+    autoload :Arp, "folk_rules/generators/arp"
+  end
+
   def self.song(name = "untitled", &block)
     Song.new(name, &block)
   end
