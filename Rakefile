@@ -8,8 +8,17 @@ Rake::TestTask.new(:test) do |t|
 end
 
 begin
-  require "standard/rake"
-  task default: %i[test standard]
+  require "rspec/core/rake_task"
+  RSpec::Core::RakeTask.new(:spec)
 rescue LoadError
-  task default: :test
+  task :spec do
+    warn "rspec not installed; skipping"
+  end
+end
+
+begin
+  require "standard/rake"
+  task default: %i[test spec standard]
+rescue LoadError
+  task default: %i[test spec]
 end
