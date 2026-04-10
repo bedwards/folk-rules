@@ -33,6 +33,8 @@ module FolkRules
     autoload :NoteLength, "folk_rules/modules/note_length"
     autoload :NoteFilter, "folk_rules/modules/note_filter"
     autoload :NoteLatch, "folk_rules/modules/note_latch"
+    autoload :Fill, "folk_rules/modules/fill"
+    autoload :PitchBend, "folk_rules/modules/pitch_bend"
   end
 
   module Generators
@@ -41,6 +43,8 @@ module FolkRules
     autoload :Melody, "folk_rules/generators/melody"
     autoload :Arp, "folk_rules/generators/arp"
   end
+
+  autoload :CcLfo, "folk_rules/cc_lfo"
 
   def self.song(name = "untitled", &block)
     Song.new(name, &block)

@@ -7,6 +7,7 @@ module FolkRules
   #   :simulated — fake Clock driven by Scheduler itself + MemoryOutput (verify/test)
   class Scheduler
     MidiEvent = Data.define(:tick, :beat, :bar, :channel, :note, :velocity, :duration_steps, :bus)
+    CcEvent = Data.define(:tick, :beat, :bar, :channel, :cc, :value, :bus)
 
     attr_reader :events, :tick_count
 
@@ -58,6 +59,7 @@ module FolkRules
       @clock.on_beat do |beat|
         @current_beat = beat
         emit_pitched_parts(beat)
+        emit_cc_lfos(beat)
       end
 
       @clock.on_bar do |bar|
@@ -111,12 +113,32 @@ module FolkRules
       end
     end
 
+    def emit_cc_lfos(beat)
+      @song.cc_lfos.each do |lfo|
+        val = lfo.value_at(beat: beat, beats_per_bar: @song.context.beats_per_bar)
+        cc_evt = CcEvent.new(
+          tick: @tick_count, beat: beat, bar: @bar_count,
+          channel: lfo.channel, cc: lfo.cc, value: val, bus: lfo.bus
+        )
+        @events << cc_evt
+        emit_cc(cc_evt)
+      end
+    end
+
     def emit_midi(evt)
       out = @outputs[evt.bus]
       return unless out
 
       status_on = 0x90 | (evt.channel & 0x0F)
       out.puts(status_on, evt.note, evt.velocity)
+    end
+
+    def emit_cc(cc_evt)
+      out = @outputs[cc_evt.bus]
+      return unless out
+
+      status = 0xB0 | (cc_evt.channel & 0x0F)
+      out.puts(status, cc_evt.cc, cc_evt.value)
     end
   end
 end

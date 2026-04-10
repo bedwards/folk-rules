@@ -23,13 +23,14 @@ module FolkRules
   class Song
     DrumPart = Data.define(:name, :bus, :channel, :octave_shift, :patterns)
 
-    attr_reader :name, :context, :drum_parts, :pitched_parts, :buses
+    attr_reader :name, :context, :drum_parts, :pitched_parts, :buses, :cc_lfos
 
     def initialize(name, &block)
       @name = name
       @context = MusicalContext.new
       @drum_parts = []
       @pitched_parts = []
+      @cc_lfos = []
       @buses = {}
       instance_eval(&block) if block
     end
@@ -97,6 +98,16 @@ module FolkRules
       gen = Generators::Arp.new(octave: octave, velocity: velocity, mode: mode,
         voicing: voicing, octave_range: octave_range, pattern: pattern)
       add_pitched_part(part_name, :arp, bus, channel, octave_shift, gen, overrides, modules: modules)
+    end
+
+    # DSL: define a CC LFO modulation source.
+    def cc_lfo(lfo_name, bus: :pitched, cc: 1, channel: 0, wave: :sine,
+      rate: 1.0, min: 0, max: 127, seed: nil)
+      require_relative "cc_lfo"
+      @cc_lfos << CcLfo.new(
+        name: lfo_name, bus: bus, cc: cc, channel: channel,
+        wave: wave, rate: rate, min: min, max: max, seed: seed
+      )
     end
 
     private

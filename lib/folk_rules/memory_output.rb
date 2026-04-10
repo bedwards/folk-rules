@@ -23,5 +23,15 @@ module FolkRules
         {channel: status & 0x0F, note: msg[1], velocity: msg[2]}
       end
     end
+
+    # Helper: extract CC events as {channel:, cc:, value:} hashes.
+    def cc_messages
+      @messages.filter_map do |msg|
+        next unless msg.length >= 3
+        status = msg[0]
+        next unless (status & 0xF0) == 0xB0
+        {channel: status & 0x0F, cc: msg[1], value: msg[2]}
+      end
+    end
   end
 end
