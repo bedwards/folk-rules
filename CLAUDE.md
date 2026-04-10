@@ -80,9 +80,41 @@ Example songs under `songs/examples/` are the real regression suite (D10).
 `fr verify` runs each song through the simulator and checks for valid MIDI.
 Failing examples block merge.
 
+## Composable Modules (M3a+M3b, D12)
+
+All modules implement `process(events, context, beat:, bar:) -> [NoteEvent]`.
+Chain via `modules: [mod1, mod2]` on any pitched part. Order matters.
+
+Available: Arpeggiator, ChordExpand, NoteRepeat, Humanize, MultiNote,
+NoteLength, NoteFilter, NoteLatch, Fill, PitchBend.
+
+## Expressive Layer (M5)
+
+- `Modules::Fill` — bar-boundary fills with density + decay
+- `Modules::PitchBend` — probability-based pitch slides
+- `CcLfo` — song-level CC modulation: sine/triangle/saw/square/random
+- Scheduler emits `CcEvent` alongside `MidiEvent`; MemoryOutput#cc_messages
+
+## MIDI Input (M2b, D8)
+
+`Input::ChordStream` reads note-on/off from a bus and identifies held chords.
+Thread-safe, `on_chord_change` callback, rolling history. Can be bound as a
+progression source for MusicalContext.
+
+## TUI Monitor (M-tui, D11)
+
+`fr tui` shows live transport, BPM, bar/beat, key/chord, and a scrolling
+MIDI event log. Built on tty-cursor/screen/box. Read-only, 10fps, q to quit.
+
+## Example Songs (D10)
+
+Songs 01–07 under `songs/examples/` are the regression suite. CI verifies all
+of them. Song 07 is a multi-file folk/country production exercising every
+feature: 7 instruments, all modules, CC LFOs, D9 scale override.
+
 ## Gotchas
 
-- `unimidi` and `ffi-coremidi` last released 2022; pin versions. If a future fix is needed, prefer forking over swapping the adapter API.
-- Sonic Pi OSC ports: 4557 (cmd), 4560 (cue in). Only one consumer of server logs at a time — the GUI OR our code, not both.
-- Bitwig Drum Machine pads start at C1 = MIDI 36. Sonic Pi `:c1` = MIDI 24. Default octave shift on the drums bus is +12 semitones.
+- `unimidi` and `ffi-coremidi` last released 2022; pin versions. Prefer forking over swapping.
+- Bitwig Drum Machine pads start at C1 = MIDI 36. Sonic Pi `:c1` = MIDI 24. Default octave shift +12.
 - Sonic Pi cannot natively sync to external MIDI clock. That is why we own the clock reader in Ruby.
+- Chord symbols like `:am`, `:fsharp7` are parsed by `Note.chord_root` which strips quality suffixes.
