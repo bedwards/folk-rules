@@ -28,6 +28,11 @@ module FolkRules
     autoload :Arpeggiator, "folk_rules/modules/arpeggiator"
     autoload :ChordExpand, "folk_rules/modules/chord_expand"
     autoload :NoteRepeat, "folk_rules/modules/note_repeat"
+    autoload :Humanize, "folk_rules/modules/humanize"
+    autoload :MultiNote, "folk_rules/modules/multi_note"
+    autoload :NoteLength, "folk_rules/modules/note_length"
+    autoload :NoteFilter, "folk_rules/modules/note_filter"
+    autoload :NoteLatch, "folk_rules/modules/note_latch"
   end
 
   module Generators
