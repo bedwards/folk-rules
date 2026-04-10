@@ -18,6 +18,10 @@ module FolkRules
   autoload :MemoryOutput, "folk_rules/memory_output"
   autoload :Verifier, "folk_rules/verifier"
 
+  module Input
+    autoload :ChordStream, "folk_rules/input/chord_stream"
+  end
+
   module Midi
     autoload :Input, "folk_rules/midi/input"
     autoload :Output, "folk_rules/midi/output"
