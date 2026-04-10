@@ -1,0 +1,19 @@
+/.bundle/
+/vendor/bundle/
+/pkg/
+/tmp/
+/coverage/
+/doc/
+/.yardoc/
+*.gem
+*.rbc
+.rspec_status
+.DS_Store
+/.idea/
+/.vscode/
+!/.vscode/extensions.json
+Gemfile.lock
+
+# Claude Code session files
+/.claude/scheduled_tasks.json
+/.claude/scheduled_tasks.lock
