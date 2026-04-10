@@ -61,6 +61,14 @@ module FolkRules
       exit(result.passed ? 0 : 1)
     end
 
+    desc "play SONG_FILE", "Play a song live against Bitwig clock"
+    method_option :clock_bus, type: :string, default: "folk_clock", desc: "IAC bus for clock input"
+    def play(song_file)
+      require_relative "runner"
+      song = load_song(song_file)
+      FolkRules::Runner.new(song: song, clock_bus: options[:clock_bus]).run
+    end
+
     desc "tui", "Open the read-only terminal monitor"
     def tui
       require_relative "tui"

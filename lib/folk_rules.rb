@@ -18,6 +18,7 @@ module FolkRules
   autoload :MemoryOutput, "folk_rules/memory_output"
   autoload :Verifier, "folk_rules/verifier"
   autoload :Tui, "folk_rules/tui"
+  autoload :Runner, "folk_rules/runner"
 
   module Input
     autoload :ChordStream, "folk_rules/input/chord_stream"

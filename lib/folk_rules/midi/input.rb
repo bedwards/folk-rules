@@ -5,14 +5,11 @@ module FolkRules
     # Thin wrapper around a UniMIDI input endpoint. Runs a reader thread that
     # polls the endpoint and yields each message to registered callbacks.
     #
-    # Endpoint selection is by substring match against the endpoint name
-    # (case-insensitive, non-alphanumerics collapsed). This matches how
-    # macOS labels IAC ports ("IAC Driver folk_clock").
+    # Endpoint selection uses CoreMidiNames for accurate per-port matching
+    # (IAC buses all show as "Apple Inc. IAC Driver" in unimidi).
     class Input
       attr_reader :name
 
-      # @param match [String] substring of the endpoint name to open
-      # @param poll_interval [Float] seconds between gets when idle
       def initialize(match:, poll_interval: 0.0005)
         @match = match
         @poll_interval = poll_interval
@@ -24,7 +21,7 @@ module FolkRules
 
       def open
         @endpoint = find_endpoint!
-        @name = endpoint_name(@endpoint)
+        @name = @display_name || endpoint_name(@endpoint)
         @endpoint.open
         self
       end
@@ -56,7 +53,7 @@ module FolkRules
 
       def stop
         @stop = true
-        @thread&.join
+        @thread&.join(2)
         @endpoint&.close
         self
       end
@@ -64,10 +61,19 @@ module FolkRules
       private
 
       def find_endpoint!
+        # First try CoreMidiNames for accurate per-port matching
+        require_relative "core_midi_names"
+        info = CoreMidiNames.find_source(@match)
+        if info
+          @display_name = info[:display_name]
+          return UniMIDI::Input.all[info[:index]]
+        end
+
+        # Fallback to unimidi name matching
         normalized = normalize(@match)
         candidates = UniMIDI::Input.all
         hit = candidates.find { |e| normalize(endpoint_name(e)).include?(normalized) }
-        raise "no MIDI input matching #{@match.inspect} (have: #{candidates.map { |c| endpoint_name(c) }.join(", ")})" unless hit
+        raise "no MIDI input matching #{@match.inspect}" unless hit
         hit
       end
 
