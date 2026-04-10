@@ -61,6 +61,13 @@ module FolkRules
       exit(result.passed ? 0 : 1)
     end
 
+    desc "tui", "Open the read-only terminal monitor"
+    def tui
+      require_relative "tui"
+      t = FolkRules::Tui.new
+      t.run
+    end
+
     desc "clock SUBCOMMAND", "Clock introspection commands"
     subcommand "clock", ClockCLI
 

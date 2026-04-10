@@ -17,6 +17,7 @@ module FolkRules
   autoload :Scheduler, "folk_rules/scheduler"
   autoload :MemoryOutput, "folk_rules/memory_output"
   autoload :Verifier, "folk_rules/verifier"
+  autoload :Tui, "folk_rules/tui"
 
   module Input
     autoload :ChordStream, "folk_rules/input/chord_stream"

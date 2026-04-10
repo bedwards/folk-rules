@@ -29,4 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor", "~> 1.3"
   spec.add_dependency "unimidi", "~> 0.5"
   spec.add_dependency "ffi-coremidi", "~> 0.3"
+  spec.add_dependency "tty-cursor", "~> 0.7"
+  spec.add_dependency "tty-screen", "~> 0.8"
+  spec.add_dependency "tty-box", "~> 0.7"
 end
