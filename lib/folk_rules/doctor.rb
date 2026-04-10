@@ -5,7 +5,6 @@ module FolkRules
   # exits non-zero on any failure. Checks are deliberately cheap and idempotent.
   class Doctor
     REQUIRED_BUSES = %w[folk_clock folk_drums folk_pitched].freeze
-    SONIC_PI_APP = "/Applications/Sonic Pi.app".freeze
     MIN_RUBY = Gem::Version.new("3.2.0")
 
     def initialize(verbose: false)
@@ -17,7 +16,6 @@ module FolkRules
       check("macOS", &method(:check_macos))
       check("ruby >= #{MIN_RUBY}", &method(:check_ruby))
       check("bundler", &method(:check_bundler))
-      check("Sonic Pi app", &method(:check_sonic_pi))
       check("unimidi gem loadable", &method(:check_unimidi))
       check("ffi-coremidi gem loadable", &method(:check_ffi_coremidi))
       check("IAC Driver enabled", &method(:check_iac_enabled))
@@ -50,11 +48,6 @@ module FolkRules
       [true, Bundler::VERSION]
     rescue LoadError
       [false, "bundler not installed"]
-    end
-
-    def check_sonic_pi
-      ok = File.directory?(SONIC_PI_APP)
-      [ok, ok ? SONIC_PI_APP : "not found at #{SONIC_PI_APP} (install from sonic-pi.net)"]
     end
 
     def check_unimidi
