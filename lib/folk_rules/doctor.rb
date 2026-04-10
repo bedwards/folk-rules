@@ -72,33 +72,30 @@ module FolkRules
     end
 
     def check_iac_enabled
-      # Presence of any MIDI endpoint implies the IAC driver (or some other
-      # provider) is active. Per-bus checks below confirm the specific names.
-      ins, outs = unimidi_endpoints
-      has_any = ins.any? || outs.any?
-      [has_any, has_any ? "CoreMIDI reachable (#{ins.size} in / #{outs.size} out)" : "no MIDI endpoints — enable IAC in Audio MIDI Setup"]
+      require_relative "midi/core_midi_names"
+      srcs = Midi::CoreMidiNames.sources
+      dsts = Midi::CoreMidiNames.destinations
+      has_any = srcs.any? || dsts.any?
+      [has_any, has_any ? "CoreMIDI reachable (#{srcs.size} in / #{dsts.size} out)" : "no MIDI endpoints — enable IAC in Audio MIDI Setup"]
+    rescue => e
+      [false, "CoreMIDI probe failed: #{e.message}"]
     end
 
     def check_bus(name)
-      ins, outs = unimidi_endpoints
-      src = ins.find { |e| normalize(endpoint_name(e)).include?(name) }
-      dst = outs.find { |e| normalize(endpoint_name(e)).include?(name) }
+      require_relative "midi/core_midi_names"
+      src = Midi::CoreMidiNames.find_source(name)
+      dst = Midi::CoreMidiNames.find_destination(name)
       if src && dst
-        [true, "in+out"]
+        [true, "in: #{src[:display_name]}, out: #{dst[:display_name]}"]
       elsif src || dst
-        [false, "only one direction visible (#{src ? "in" : "out"}) — check Audio MIDI Setup"]
+        dir = src ? "in" : "out"
+        found = src || dst
+        [false, "only #{dir} visible (#{found[:display_name]}) — check Audio MIDI Setup"]
       else
         [false, "not found — create in Audio MIDI Setup → IAC Driver"]
       end
-    end
-
-    def unimidi_endpoints
-      require "unimidi"
-      [UniMIDI::Input.all, UniMIDI::Output.all]
-    end
-
-    def endpoint_name(ep)
-      ep.respond_to?(:name) ? ep.name : ep.to_s
+    rescue => e
+      [false, "probe failed: #{e.message}"]
     end
 
     def normalize(s) = s.to_s.downcase.gsub(/[^a-z0-9]+/, "_")
