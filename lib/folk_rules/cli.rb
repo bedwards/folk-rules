@@ -30,7 +30,7 @@ module FolkRules
     end
   end
 
-  # Top-level `fr` command. Subcommands are added incrementally as milestones land.
+  # Top-level `fr` command.
   class CLI < Thor
     def self.exit_on_failure? = true
 
@@ -46,7 +46,34 @@ module FolkRules
       exit(ok ? 0 : 1)
     end
 
+    desc "verify SONG_FILE", "Run a song in simulated mode and verify MIDI output"
+    method_option :bars, type: :numeric, default: 8, desc: "number of bars to simulate"
+    def verify(song_file)
+      require_relative "verifier"
+      song = load_song(song_file)
+      result = Verifier.new(song: song, bars: options[:bars]).run
+      result.checks.each do |c|
+        mark = c.ok ? "\e[32m✓\e[0m" : "\e[31m✗\e[0m"
+        puts "#{mark} #{c.name}: #{c.detail}"
+      end
+      puts
+      puts "#{result.events.size} events over #{result.bars} bars"
+      exit(result.passed ? 0 : 1)
+    end
+
     desc "clock SUBCOMMAND", "Clock introspection commands"
     subcommand "clock", ClockCLI
+
+    private
+
+    def load_song(path)
+      unless File.exist?(path)
+        warn "song not found: #{path}"
+        exit 1
+      end
+      # The song file is expected to call FolkRules.song and return the Song object.
+      # We capture it by evaluating in a binding that returns the last expression.
+      eval(File.read(path), TOPLEVEL_BINDING, path) # rubocop:disable Security/Eval
+    end
   end
 end
