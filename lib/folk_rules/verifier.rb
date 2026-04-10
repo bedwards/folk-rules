@@ -28,6 +28,7 @@ module FolkRules
       checks = []
       checks << check_has_events(events)
       checks << check_drum_notes_valid(events)
+      checks << check_pitched_notes_in_range(events)
       checks << check_velocities_in_range(events)
 
       Result.new(
@@ -49,6 +50,12 @@ module FolkRules
       drum_events = events.select { |e| e.channel == 9 }
       bad = drum_events.reject { |e| (0..127).cover?(e.note) }
       Check.new(name: "drum_notes_valid", ok: bad.empty?, detail: "#{bad.size} out-of-range notes")
+    end
+
+    def check_pitched_notes_in_range(events)
+      pitched = events.reject { |e| e.channel == 9 }
+      bad = pitched.reject { |e| (0..127).cover?(e.note) }
+      Check.new(name: "pitched_notes_in_range", ok: bad.empty?, detail: "#{pitched.size} pitched events, #{bad.size} out-of-range")
     end
 
     def check_velocities_in_range(events)
