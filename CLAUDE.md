@@ -34,10 +34,30 @@ Re-read these at the start of any session before editing code. Do not re-derive 
 ## Quick commands
 
 ```sh
-bundle exec rake              # test + standardrb
-bundle exec exe/fr doctor -v  # environment check
+bundle exec rake                     # test + spec + standardrb
+bundle exec rake test                # minitest only (pure logic)
+bundle exec rake spec                # rspec only (integration; iac-tagged skipped by default)
+FOLK_RULES_IAC=1 bundle exec rake spec  # run IAC-gated integration (requires folk_clock bus free)
+bundle exec exe/fr doctor -v         # environment check
+bundle exec exe/fr clock monitor     # live BPM/bar/beat from Bitwig
 bundle exec exe/fr version
 ```
+
+## Clock architecture (M1)
+
+`FolkRules::Clock` is pure Ruby, zero MIDI coupling — it takes a `now:` time
+source for deterministic tests and a generic `attach(input)` call where the
+input is anything that responds to `on_message(&block)` yielding MIDI bytes.
+
+Smoother: sliding window over the last N ticks (default 96 = 4 beats at 24
+PPQN). BPM is computed as `60.0 / (mean_interval * PPQN)`. Unit tests drive
+the clock with a fake monotonic time source and assert sub-0.01 BPM accuracy
+against stable sources and successful convergence after tempo changes.
+
+The rspec `:iac` loopback test pumps `0xF8` bytes from a `Midi::Output` into
+the real `folk_clock` IAC bus while a `Midi::Input` on the same bus feeds a
+live `Clock`. Asserts BPM within 0.5 of the target. Gated on `FOLK_RULES_IAC=1`
+because CI runners have no IAC driver.
 
 ## Gotchas
 
